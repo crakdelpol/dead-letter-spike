@@ -1,4 +1,4 @@
-package it.pipitone.matteo.spike.rabbitmq.deadletter;
+package it.pipitone.matteo.spike.rabbitmq.parkinglot;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -9,7 +9,7 @@ public class ParkingLotConsumer {
 
     private static final Logger logger = LoggerFactory.getLogger(ParkingLotConsumer.class);
 
-    @RabbitListener(queues = "dead-letter.queue")
+    @RabbitListener(queues = "parking-lot.queue")
     public void handleMessage(Message failedMessage){
         logger.info("Received message in parking lot queue {}", failedMessage.toString());
     }

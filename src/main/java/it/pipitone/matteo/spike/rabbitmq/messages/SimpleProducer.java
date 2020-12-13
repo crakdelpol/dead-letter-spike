@@ -1,8 +1,8 @@
-package it.pipitone.matteo.spike.rabbitmq.deadletter;
+package it.pipitone.matteo.spike.rabbitmq.messages;
 
 import org.springframework.amqp.core.AmqpTemplate;
 
-import static it.pipitone.matteo.spike.rabbitmq.deadletter.MessagingConfiguration.MESSAGE_EXCHANGE;
+import static it.pipitone.matteo.spike.rabbitmq.configuration.MessagingConfiguration.MESSAGE_EXCHANGE;
 
 public class SimpleProducer {
 

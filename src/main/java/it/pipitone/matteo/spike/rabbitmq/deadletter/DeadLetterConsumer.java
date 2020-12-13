@@ -1,15 +1,15 @@
 package it.pipitone.matteo.spike.rabbitmq.deadletter;
 
+import it.pipitone.matteo.spike.rabbitmq.configuration.MessagingConfiguration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.amqp.core.AmqpTemplate;
 import org.springframework.amqp.core.Message;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
 
-import static it.pipitone.matteo.spike.rabbitmq.deadletter.MessagingConfiguration.*;
+import static it.pipitone.matteo.spike.rabbitmq.configuration.MessagingConfiguration.*;
 
 public class DeadLetterConsumer {
-
 
     private static final Logger logger = LoggerFactory.getLogger(DeadLetterConsumer.class);
 
@@ -25,6 +25,7 @@ public class DeadLetterConsumer {
         logger.info("Number of retries count {}", retriesCnt);
         if (retriesCnt == null)
             retriesCnt = 1;
+
         if (retriesCnt > MAX_RETRIES_COUNT) {
             logger.info("Sending message to the parking lot queue");
             amqpTemplate.convertAndSend(EXCHANGE_PARKING_LOT, failedMessage.getMessageProperties().getReceivedRoutingKey(), failedMessage);

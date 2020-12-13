@@ -1,5 +1,8 @@
-package it.pipitone.matteo.spike.rabbitmq.deadletter;
+package it.pipitone.matteo.spike.rabbitmq.configuration;
 
+import it.pipitone.matteo.spike.rabbitmq.deadletter.DeadLetterConsumer;
+import it.pipitone.matteo.spike.rabbitmq.parkinglot.ParkingLotConsumer;
+import it.pipitone.matteo.spike.rabbitmq.messages.SimpleConsumer;
 import org.springframework.amqp.core.*;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

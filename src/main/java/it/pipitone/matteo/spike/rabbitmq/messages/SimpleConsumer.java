@@ -1,5 +1,6 @@
-package it.pipitone.matteo.spike.rabbitmq.deadletter;
+package it.pipitone.matteo.spike.rabbitmq.messages;
 
+import it.pipitone.matteo.spike.rabbitmq.exceptions.BusinessException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;

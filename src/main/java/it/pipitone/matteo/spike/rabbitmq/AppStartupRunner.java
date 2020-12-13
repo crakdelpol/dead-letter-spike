@@ -1,5 +1,6 @@
-package it.pipitone.matteo.spike.rabbitmq.deadletter;
+package it.pipitone.matteo.spike.rabbitmq;
 
+import it.pipitone.matteo.spike.rabbitmq.messages.SimpleProducer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.ApplicationArguments;
