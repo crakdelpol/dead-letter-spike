@@ -1,28 +1,32 @@
 package it.pipitone.matteo.spike.rabbitmq.deadletter;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.amqp.core.*;
-import org.springframework.amqp.support.converter.Jackson2JsonMessageConverter;
-import org.springframework.amqp.support.converter.MessageConverter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 @Configuration
 public class MessagingConfiguration {
 
-    String DLQ_EXCHANGE = "fanout.exchange";
-    public static String MESSAGE_EXCHANGE = "exchange.direct";
+    public static String DLQ_EXCHANGE = "exchange.fanout.deal-letter";
+    public static String PARKING_LOT_EXCHANGE = "exchange.fanout.parking-lot";
+    public static String MESSAGE_EXCHANGE = "exchange.direct.message";
+    public static String EXCHANGE_PARKING_LOT = "exchange.fanout.parking-lot";
+    public static final String HEADER_X_RETRIES_COUNT = "x-retries-count";
+    public static final int MAX_RETRIES_COUNT = 2;
 
     @Bean
     Queue messagesQueue(){
-
         return QueueBuilder.nonDurable("messages.queue").withArgument("x-dead-letter-exchange", DLQ_EXCHANGE).build();
     }
 
     @Bean
     Queue deadLetterQueue(){
-        return QueueBuilder.nonDurable("dead-letter.queue")
-                .build();
+        return QueueBuilder.nonDurable("dead-letter.queue").build();
+    }
+
+    @Bean
+    Queue parkingLotQueue(){
+        return QueueBuilder.nonDurable("parking-lot.queue").build();
     }
 
     @Bean
@@ -31,8 +35,13 @@ public class MessagingConfiguration {
     }
 
     @Bean
-    FanoutExchange fanoutExchange(){
+    FanoutExchange deadLetterExchange(){
         return new FanoutExchange(DLQ_EXCHANGE);
+    }
+
+     @Bean
+    FanoutExchange parkingLotExchange(){
+        return new FanoutExchange(PARKING_LOT_EXCHANGE);
     }
 
     @Bean
@@ -42,14 +51,12 @@ public class MessagingConfiguration {
 
     @Bean
     Binding bindDLQ(){
-        return BindingBuilder.bind(deadLetterQueue()).to(fanoutExchange());
+        return BindingBuilder.bind(deadLetterQueue()).to(deadLetterExchange());
     }
 
     @Bean
-    MessageConverter jsonMessageConverter(
-            ObjectMapper jacksonObjectMapper
-    ) {
-        return new Jackson2JsonMessageConverter(jacksonObjectMapper);
+    Binding bindParkingLot(){
+        return BindingBuilder.bind(parkingLotQueue()).to(parkingLotExchange());
     }
 
     @Bean
@@ -60,5 +67,10 @@ public class MessagingConfiguration {
     @Bean
     DeadLetterConsumer deadLetterConsumer(AmqpTemplate amqpTemplate){
         return new DeadLetterConsumer(amqpTemplate);
+    }
+
+    @Bean
+    ParkingLotConsumer parkingLotConsumer(){
+        return new ParkingLotConsumer();
     }
 }
