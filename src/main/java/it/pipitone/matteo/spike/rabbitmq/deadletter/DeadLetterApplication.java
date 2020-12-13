@@ -12,8 +12,6 @@ public class DeadLetterApplication {
     public static void main(String[] args) {
 
         SpringApplication.run(DeadLetterApplication.class, args);
-
-
     }
 
 }

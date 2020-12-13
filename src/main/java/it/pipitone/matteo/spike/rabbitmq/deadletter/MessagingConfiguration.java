@@ -2,9 +2,6 @@ package it.pipitone.matteo.spike.rabbitmq.deadletter;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.amqp.core.*;
-import org.springframework.amqp.rabbit.connection.ConnectionFactory;
-import org.springframework.amqp.rabbit.listener.DirectMessageListenerContainer;
-import org.springframework.amqp.rabbit.listener.adapter.MessageListenerAdapter;
 import org.springframework.amqp.support.converter.Jackson2JsonMessageConverter;
 import org.springframework.amqp.support.converter.MessageConverter;
 import org.springframework.context.annotation.Bean;
@@ -13,43 +10,39 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class MessagingConfiguration {
 
+    String DLQ_EXCHANGE = "fanout.exchange";
+    public static String MESSAGE_EXCHANGE = "exchange.direct";
+
     @Bean
     Queue messagesQueue(){
 
-        return QueueBuilder.durable("messages.queue")
+        return QueueBuilder.nonDurable("messages.queue").withArgument("x-dead-letter-exchange", DLQ_EXCHANGE).build();
+    }
+
+    @Bean
+    Queue deadLetterQueue(){
+        return QueueBuilder.nonDurable("dead-letter.queue")
                 .build();
     }
 
+    @Bean
+    DirectExchange directExchange(){
+        return new DirectExchange(MESSAGE_EXCHANGE);
+    }
 
     @Bean
-    DirectExchange fanoutExchange(){
-        return new DirectExchange("exchange.direct");
+    FanoutExchange fanoutExchange(){
+        return new FanoutExchange(DLQ_EXCHANGE);
     }
 
     @Bean
     Binding bindMessage(){
-        return BindingBuilder.bind(messagesQueue()).to(fanoutExchange()).with("simple.message");
+        return BindingBuilder.bind(messagesQueue()).to(directExchange()).with("simple.message");
     }
 
     @Bean
-    DirectMessageListenerContainer directMessageListenerContainerDLQ(
-            ConnectionFactory connectionFactory,
-            Queue messagesQueue,
-            MessageListener messageListenerAdapter)
-    {
-        return new DirectMessageListenerContainer(connectionFactory){{
-            setQueues(messagesQueue);
-            setMessageListener(messageListenerAdapter);
-        }};
-
-    }
-
-    @Bean
-    MessageListenerAdapter messageListenerAdapter(SimpleConsumer simpleConsumer, MessageConverter jsonMessageConverter){
-
-        MessageListenerAdapter messageListenerAdapter = new MessageListenerAdapter(simpleConsumer, jsonMessageConverter);
-        messageListenerAdapter.setDefaultRequeueRejected(false);
-        return messageListenerAdapter;
+    Binding bindDLQ(){
+        return BindingBuilder.bind(deadLetterQueue()).to(fanoutExchange());
     }
 
     @Bean
@@ -64,5 +57,8 @@ public class MessagingConfiguration {
         return new SimpleConsumer();
     }
 
-
+    @Bean
+    DeadLetterConsumer deadLetterConsumer(AmqpTemplate amqpTemplate){
+        return new DeadLetterConsumer(amqpTemplate);
+    }
 }
