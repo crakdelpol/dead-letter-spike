@@ -29,10 +29,6 @@ class MainApplicationTests {
     void contextLoads() {
     }
 
-    @BeforeEach
-    void setUp() {
-    }
-
     @Test
     void verifyDeadLetterIsCalled() {
         amqpTemplate.convertAndSend(MESSAGE_EXCHANGE, "simple.message","messageTest");
