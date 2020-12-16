@@ -7,12 +7,15 @@ import org.springframework.amqp.core.*;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
+import java.util.HashMap;
+
 @Configuration
 public class MessagingConfiguration {
 
     public static String DLQ_EXCHANGE = "exchange.fanout.deal-letter";
+
     public static String PARKING_LOT_EXCHANGE = "exchange.fanout.parking-lot";
-    public static String MESSAGE_EXCHANGE = "exchange.direct.message";
+    public static String MESSAGE_EXCHANGE = "exchange.topic.message";
     public static String EXCHANGE_PARKING_LOT = "exchange.fanout.parking-lot";
     public static final String HEADER_X_RETRIES_COUNT = "x-retries-count";
     public static final int MAX_RETRIES_COUNT = 2;
@@ -33,13 +36,21 @@ public class MessagingConfiguration {
     }
 
     @Bean
-    DirectExchange directExchange(){
-        return new DirectExchange(MESSAGE_EXCHANGE);
+    TopicExchange directExchange(){
+        return new TopicExchange(MESSAGE_EXCHANGE);
     }
 
     @Bean
-    FanoutExchange deadLetterExchange(){
-        return new FanoutExchange(DLQ_EXCHANGE);
+    AbstractExchange deadLetterExchange(){
+
+        return new AbstractExchange(DLQ_EXCHANGE, true, false, new HashMap<String, Object>(){{
+            put("x-delayed-type", "fanout");
+        }}){
+            @Override
+            public String getType() {
+                return "x-delayed-message";
+            }
+        };
     }
 
      @Bean
@@ -54,7 +65,7 @@ public class MessagingConfiguration {
 
     @Bean
     Binding bindDLQ(){
-        return BindingBuilder.bind(deadLetterQueue()).to(deadLetterExchange());
+        return BindingBuilder.bind(deadLetterQueue()).to(deadLetterExchange()).with("").and(new HashMap<>());
     }
 
     @Bean

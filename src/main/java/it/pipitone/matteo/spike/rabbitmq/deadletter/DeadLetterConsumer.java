@@ -7,6 +7,8 @@ import org.springframework.amqp.core.AmqpTemplate;
 import org.springframework.amqp.core.Message;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
 
+import java.time.Duration;
+
 import static it.pipitone.matteo.spike.rabbitmq.configuration.MessagingConfiguration.*;
 
 public class DeadLetterConsumer {
@@ -33,6 +35,7 @@ public class DeadLetterConsumer {
         }
         logger.info("DLQ receive message {}", failedMessage);
         failedMessage.getMessageProperties().getHeaders().put(HEADER_X_RETRIES_COUNT, ++retriesCnt);
+        failedMessage.getMessageProperties().getHeaders().put("x-delay", Duration.ofSeconds(10).toMillis());
         amqpTemplate.convertAndSend(MessagingConfiguration.MESSAGE_EXCHANGE, failedMessage.getMessageProperties().getReceivedRoutingKey(), failedMessage);
     }
 
