@@ -1,5 +1,7 @@
-package it.pipitone.matteo.spike.rabbitmq.deadletter;
+package it.pipitone.matteo.spike.rabbitmq.configuration;
 
+import it.pipitone.matteo.spike.rabbitmq.AppStartupRunner;
+import it.pipitone.matteo.spike.rabbitmq.messages.SimpleProducer;
 import org.springframework.amqp.core.AmqpTemplate;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
