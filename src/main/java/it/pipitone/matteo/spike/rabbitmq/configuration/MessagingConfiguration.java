@@ -42,15 +42,7 @@ public class MessagingConfiguration {
 
     @Bean
     AbstractExchange deadLetterExchange(){
-
-        return new AbstractExchange(DLQ_EXCHANGE, true, false, new HashMap<String, Object>(){{
-            put("x-delayed-type", "fanout");
-        }}){
-            @Override
-            public String getType() {
-                return "x-delayed-message";
-            }
-        };
+        return new FanoutExchange(DLQ_EXCHANGE);
     }
 
      @Bean
