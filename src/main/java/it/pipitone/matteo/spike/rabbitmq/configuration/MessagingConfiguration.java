@@ -1,11 +1,20 @@
 package it.pipitone.matteo.spike.rabbitmq.configuration;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import it.pipitone.matteo.spike.rabbitmq.deadletter.DeadLetterConsumer;
 import it.pipitone.matteo.spike.rabbitmq.parkinglot.ParkingLotConsumer;
 import it.pipitone.matteo.spike.rabbitmq.messages.SimpleConsumer;
 import org.springframework.amqp.core.*;
+import org.springframework.amqp.rabbit.config.RetryInterceptorBuilder;
+import org.springframework.amqp.rabbit.connection.ConnectionFactory;
+import org.springframework.amqp.rabbit.listener.DirectMessageListenerContainer;
+import org.springframework.amqp.rabbit.listener.adapter.MessageListenerAdapter;
+import org.springframework.amqp.support.converter.Jackson2JsonMessageConverter;
+import org.springframework.amqp.support.converter.MessageConverter;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.retry.interceptor.StatefulRetryOperationsInterceptor;
 
 import java.util.HashMap;
 
@@ -78,5 +87,43 @@ public class MessagingConfiguration {
     @Bean
     ParkingLotConsumer parkingLotConsumer(){
         return new ParkingLotConsumer();
+    }
+
+
+    @Bean
+    DirectMessageListenerContainer insufficientFundsMessageListenerContainer(
+            ConnectionFactory connectionFactory,
+            Queue messagesQueue,
+            @Qualifier("simpleMessageListener") MessageListener simpleMessageListener,
+            StatefulRetryOperationsInterceptor interceptor
+    )
+    {
+        return new DirectMessageListenerContainer(connectionFactory){{
+            setQueues(messagesQueue);
+            setMessageListener(simpleMessageListener);
+//            setDefaultRequeueRejected(false);
+            setAdviceChain(interceptor);
+        }};
+
+    }
+
+    @Bean
+    MessageListenerAdapter simpleMessageListener(SimpleConsumer simpleConsumer, MessageConverter jsonMessageConverter){
+        return new MessageListenerAdapter(simpleConsumer, jsonMessageConverter);
+    }
+
+    @Bean
+    MessageConverter jsonMessageConverter(
+            ObjectMapper jacksonObjectMapper
+    ) {
+        return new Jackson2JsonMessageConverter(jacksonObjectMapper);
+    }
+
+    @Bean
+    public StatefulRetryOperationsInterceptor interceptor() {
+        return RetryInterceptorBuilder.stateful()
+                .maxAttempts(5)
+                .backOffOptions(1000, 2.0, 10000) // initialInterval, multiplier, maxInterval
+                .build();
     }
 }
