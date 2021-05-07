@@ -1,9 +1,10 @@
 package it.pipitone.matteo.spike.rabbitmq.configuration;
 
 import it.pipitone.matteo.spike.rabbitmq.deadletter.DeadLetterConsumer;
-import it.pipitone.matteo.spike.rabbitmq.parkinglot.ParkingLotConsumer;
 import it.pipitone.matteo.spike.rabbitmq.messages.SimpleConsumer;
+import it.pipitone.matteo.spike.rabbitmq.parkinglot.ParkingLotConsumer;
 import org.springframework.amqp.core.*;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -21,10 +22,15 @@ public class MessagingConfiguration {
     public static final int MAX_RETRIES_COUNT = 2;
 
     @Bean
-    Queue messagesQueue(){
-        return QueueBuilder.nonDurable("messages.queue").withArgument("x-dead-letter-exchange", DLQ_EXCHANGE).build();
+    @Qualifier("dlqExchange")
+    public String dlqExchange(){
+        return DLQ_EXCHANGE;
     }
-
+    @Bean
+    @Qualifier("messageExchange")
+    public String messageExchange(){
+        return MESSAGE_EXCHANGE;
+    }
     @Bean
     Queue deadLetterQueue(){
         return QueueBuilder.nonDurable("dead-letter.queue").build();
@@ -48,11 +54,6 @@ public class MessagingConfiguration {
      @Bean
     FanoutExchange parkingLotExchange(){
         return new FanoutExchange(PARKING_LOT_EXCHANGE);
-    }
-
-    @Bean
-    Binding bindMessage(){
-        return BindingBuilder.bind(messagesQueue()).to(directExchange()).with("simple.message");
     }
 
     @Bean
