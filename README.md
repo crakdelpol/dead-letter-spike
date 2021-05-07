@@ -6,3 +6,6 @@ manual handle retry system whit count and parking-lot queue
 
 ### Branch retry-by-configuration
 Retry system handled by rabbit-mq through configurations stored in application.properties.
+
+### Branch full-rabbit-listener
+an example of full configuration with @RabbitListener
