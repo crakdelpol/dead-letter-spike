@@ -2,8 +2,8 @@ package it.pipitone.matteo.spike.rabbitmq.configuration;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import it.pipitone.matteo.spike.rabbitmq.deadletter.DeadLetterConsumer;
-import it.pipitone.matteo.spike.rabbitmq.parkinglot.ParkingLotConsumer;
 import it.pipitone.matteo.spike.rabbitmq.messages.SimpleConsumer;
+import it.pipitone.matteo.spike.rabbitmq.parkinglot.ParkingLotConsumer;
 import org.springframework.amqp.core.*;
 import org.springframework.amqp.rabbit.config.RetryInterceptorBuilder;
 import org.springframework.amqp.rabbit.connection.ConnectionFactory;
@@ -14,7 +14,7 @@ import org.springframework.amqp.support.converter.MessageConverter;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.retry.interceptor.StatefulRetryOperationsInterceptor;
+import org.springframework.retry.interceptor.RetryOperationsInterceptor;
 
 import java.util.HashMap;
 
@@ -95,7 +95,7 @@ public class MessagingConfiguration {
             ConnectionFactory connectionFactory,
             Queue messagesQueue,
             @Qualifier("simpleMessageListener") MessageListener simpleMessageListener,
-            StatefulRetryOperationsInterceptor interceptor
+            RetryOperationsInterceptor interceptor
     )
     {
         return new DirectMessageListenerContainer(connectionFactory){{
@@ -120,8 +120,8 @@ public class MessagingConfiguration {
     }
 
     @Bean
-    public StatefulRetryOperationsInterceptor interceptor() {
-        return RetryInterceptorBuilder.stateful()
+    public RetryOperationsInterceptor interceptor() {
+        return RetryInterceptorBuilder.stateless()
                 .maxAttempts(5)
                 .backOffOptions(1000, 2.0, 10000) // initialInterval, multiplier, maxInterval
                 .build();
