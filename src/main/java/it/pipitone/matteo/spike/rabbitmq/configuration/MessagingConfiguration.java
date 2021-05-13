@@ -9,6 +9,7 @@ import org.springframework.amqp.rabbit.config.RetryInterceptorBuilder;
 import org.springframework.amqp.rabbit.connection.ConnectionFactory;
 import org.springframework.amqp.rabbit.listener.DirectMessageListenerContainer;
 import org.springframework.amqp.rabbit.listener.adapter.MessageListenerAdapter;
+import org.springframework.amqp.rabbit.retry.RejectAndDontRequeueRecoverer;
 import org.springframework.amqp.support.converter.Jackson2JsonMessageConverter;
 import org.springframework.amqp.support.converter.MessageConverter;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -103,6 +104,7 @@ public class MessagingConfiguration {
             setMessageListener(simpleMessageListener);
 //            setDefaultRequeueRejected(false);
             setAdviceChain(interceptor);
+
         }};
 
     }
@@ -124,6 +126,7 @@ public class MessagingConfiguration {
         return RetryInterceptorBuilder.stateless()
                 .maxAttempts(5)
                 .backOffOptions(1000, 2.0, 10000) // initialInterval, multiplier, maxInterval
+                .recoverer(new RejectAndDontRequeueRecoverer())
                 .build();
     }
 }
